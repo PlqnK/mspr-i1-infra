@@ -13,7 +13,7 @@
     path: '{{ containers_data_path }}/nextcloud_mariadb/db'
     state: 'directory'
 
-- name: 'Create web-proxy and internal docker networks'
+- name: 'Create docker networks'
   community.general.docker_network:
     name: '{{ item.name }}'
     internal: '{{ item.internal }}'

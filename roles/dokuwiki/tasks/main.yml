@@ -1,5 +1,5 @@
 ---
-- name: 'Create DokuWiki config and data directories'
+- name: 'Create DokuWiki data directory'
   ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'

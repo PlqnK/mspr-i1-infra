@@ -62,7 +62,7 @@
     - 'http'
     - 'https'
 
-- name: 'Create web-proxy and socket-proxy docker networks'
+- name: 'Create docker networks'
   community.general.docker_network:
     name: '{{ item.name }}'
     internal: '{{ item.internal }}'
