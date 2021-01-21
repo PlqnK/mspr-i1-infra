@@ -1,8 +1,15 @@
 ---
-- name: 'Debug'
+- name: 'Setup the host'
   hosts: 'services-host'
   become: yes
-  tasks:
-    - name: 'Print facts'
-      ansible.builtin.debug:
-        var: ansible_facts
+  roles:
+    - 'ubuntu-setup'
+    - 'docker-setup'
+
+- name: 'Setup the services'
+  hosts: 'services-host'
+  become: yes
+  roles:
+    - 'docker-socket-proxy'
+    - 'traefik'
+    - 'nextcloud'
