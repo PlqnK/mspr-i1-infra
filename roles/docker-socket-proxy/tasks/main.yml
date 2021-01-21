@@ -1,0 +1,27 @@
+---
+- name: 'Create socket-proxy docker network'
+  community.general.docker_network:
+    name: 'socket-proxy'
+    internal: yes
+    state: 'present'
+
+- name: 'Create the Docker Socket Proxy container'
+  community.general.docker_container:
+    name: 'docker-socket-proxy'
+    image: 'tecnativa/docker-socket-proxy'
+    restart_policy: 'unless-stopped'
+    privileged: yes
+    networks:
+      - name: 'socket-proxy'
+        aliases: 'docker-socket-proxy'
+    network_mode: 'socket-proxy'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    env:
+      TZ: '{{ timezone }}'
+      CONTAINERS: '1'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
