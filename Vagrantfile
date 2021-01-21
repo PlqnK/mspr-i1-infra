@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
       ansible.inventory_path = "inventories/vagrant.yml"
       ansible.playbook = "playbook.yml"
       ansible.limit = "all"
-      ansible.extra_vars = "@vault/vagrant.yml"
+      ansible.extra_vars = "@vaults/vagrant.yml"
     end
   end
 end

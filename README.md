@@ -64,5 +64,5 @@ Pour les hôtes de services:
 ### Déploiement
 
 ```bash
-ansible-playbook -i inventories/production.yml playbook.yml -e @vault/production.yml --ask-vault-pass
+ansible-playbook -i inventories/production.yml playbook.yml -e @vaults/production.yml --ask-vault-pass
 ```
