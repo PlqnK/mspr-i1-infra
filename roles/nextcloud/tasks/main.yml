@@ -1,0 +1,142 @@
+---
+- name: 'Create config directory'
+  ansible.builtin.file:
+    path: '{{ containers_config_path }}/nextcloud'
+    state: 'directory'
+    owner: '33'
+    group: 'root'
+    mode: '0755'
+
+- name: 'Create data directory'
+  ansible.builtin.file:
+    path: '{{ containers_data_path }}/nextcloud'
+    state: 'directory'
+    owner: '33'
+    group: 'root'
+    mode: '0755'
+
+- name: 'Create database directory'
+  ansible.builtin.file:
+    path: '{{ containers_data_path }}/nextcloud_mariadb'
+    state: 'directory'
+    owner: '999'
+    group: '999'
+    mode: '0755'
+
+- name: 'Create web-proxy and internal docker networks'
+  community.general.docker_network:
+    name: '{{ item.name }}'
+    internal: '{{ item.internal }}'
+    state: 'present'
+  loop:
+    - name: 'web-proxy'
+      internal: no
+    - name: 'internal'
+      internal: yes
+
+- name: 'Create the MariaDB container'
+  community.general.docker_container:
+    name: 'nextcloud_mariadb'
+    image: 'mariadb:{{ mariadb_image_tag }}'
+    restart_policy: 'unless-stopped'
+    command: '--transaction-isolation=READ-COMMITTED --log-bin --binlog-format=ROW'
+    networks:
+      - name: 'internal'
+        aliases: 'nextcloud_mariadb'
+    network_mode: 'internal'
+    volumes:
+      - '{{ containers_data_path }}/nextcloud_mariadb:/var/lib/mysql'
+    env:
+      TZ: '{{ timezone }}'
+      MYSQL_ROOT_PASSWORD: '{{ nextcloud_mysql_root_password }}'
+      MYSQL_PASSWORD: '{{ nextcloud_mysql_password }}'
+      MYSQL_DATABASE: '{{ nextcloud_mysql_database }}'
+      MYSQL_USER: '{{ nextcloud_mysql_user }}'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
+
+- name: 'Create the Redis container'
+  community.general.docker_container:
+    name: 'nextcloud_redis'
+    image: 'redis:{{ redis_image_tag }}'
+    restart_policy: 'unless-stopped'
+    command: '--requirepass {{ nextcloud_redis_password }}'
+    networks:
+      - name: 'internal'
+        aliases: 'nextcloud_redis'
+    network_mode: 'internal'
+    env:
+      TZ: '{{ timezone }}'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
+
+# Need that container in order to be able to use cron as a background job in Nextcloud
+# This container has one process running: cron, which execute /var/www/html/cron.php every 15 minutes
+# More info here: https://github.com/nextcloud/docker/pull/220
+- name: 'Create the Cron container'
+  community.general.docker_container:
+    name: 'nextcloud_cron'
+    image: 'nextcloud:{{ nextcloud_image_tag }}'
+    restart_policy: 'unless-stopped'
+    entrypoint: '/cron.sh'
+    networks:
+      - name: 'internal'
+        aliases: 'nextcloud_cron'
+    network_mode: 'internal'
+    volumes:
+      - '{{ containers_config_path }}/nextcloud:/var/www/html'
+      - '{{ containers_data_path }}/nextcloud:/var/www/html/data'
+    env:
+      TZ: '{{ timezone }}'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
+
+- name: 'Create the Nextcloud container'
+  community.general.docker_container:
+    name: 'nextcloud'
+    image: 'nextcloud:{{ nextcloud_image_tag }}'
+    restart_policy: 'unless-stopped'
+    networks:
+      - name: 'web-proxy'
+        aliases: 'nextcloud'
+      - name: 'internal'
+        aliases: 'nextcloud'
+    network_mode: 'web-proxy'
+    volumes:
+      - '{{ containers_config_path }}/nextcloud:/var/www/html'
+      - '{{ containers_data_path }}/nextcloud:/var/www/html/data'
+    env:
+      TZ: '{{ timezone }}'
+      APACHE_DISABLE_REWRITE_IP: '1'
+      TRUSTED_PROXIES: 'traefik'
+      OVERWRITEPROTOCOL: 'https'
+      NEXTCLOUD_TRUSTED_DOMAINS: 'cloud.{{ domain_name }}'
+      MYSQL_DATABASE: '{{ nextcloud_mysql_database }}'
+      MYSQL_USER: '{{ nextcloud_mysql_user }}'
+      MYSQL_PASSWORD: '{{ nextcloud_mysql_password }}'
+      MYSQL_HOST: '{{ nextcloud_mysql_host }}'
+      REDIS_HOST_PASSWORD: '{{ nextcloud_redis_password }}'
+      REDIS_HOST: '{{ nextcloud_redis_host }}'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.cloud.rule: 'Host(`cloud.{{ domain_name }}`)'
+      traefik.http.routers.cloud.entrypoints: 'websecure'
+      traefik.http.routers.cloud.middlewares: 'set-security-headers@file, nextcloud-dav-redirect'
+      traefik.http.services.cloud.loadbalancer.server.port: '80'
+      traefik.http.middlewares.nextcloud-dav-redirect.redirectRegex.permanent: 'true'
+      traefik.http.middlewares.nextcloud-dav-redirect.redirectRegex.regex: 'https://(.*)/.well-known/(card|cal)dav'
+      traefik.http.middlewares.nextcloud-dav-redirect.redirectRegex.replacement: 'https://${1}/remote.php/dav/'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'

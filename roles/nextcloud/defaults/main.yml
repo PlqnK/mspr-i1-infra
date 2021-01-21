@@ -1,0 +1,11 @@
+---
+mariadb_image_tag: 'latest'
+redis_image_tag: 'latest'
+nextcloud_image_tag: 'latest'
+nextcloud_redis_host: 'nextcloud_redis'
+nextcloud_mysql_host: 'nextcloud_mariadb'
+nextcloud_mysql_database: 'nextcloud'
+nextcloud_mysql_user: 'nextcloud'
+nextcloud_mysql_password: 'mysql'
+nextcloud_mysql_root_password: 'mysql'
+nextcloud_redis_password: 'redis'
