@@ -1,0 +1,8 @@
+---
+timezone: 'Europe/Paris'
+containers_config_path: '/opt/containers/config'
+containers_data_path: '/opt/containers/data'
+traefik_image_tag: '2.4'
+mariadb_image_tag: '10'
+redis_image_tag: '6'
+nextcloud_image_tag: '20'
