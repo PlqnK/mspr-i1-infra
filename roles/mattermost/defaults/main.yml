@@ -1,6 +1,12 @@
 ---
+# The default behavior of Ansible is not to merge a dictionnary defined in separate places and I prefer to leave that
+# as default.
+# That's why I need to define the tag in a separate variable from the dictionnary because I want to be able to redefine
+# the dictionnary and the tag in separate files, respectively `vault/<env>.yml` and inventories/group_vars/all.yml`.
 mattermost_image_tag: 'latest'
 mattermost_postgres_image_tag: 'latest'
-mattermost_postgres_database: 'mattermost'
-mattermost_postgres_user: 'mattermost'
-mattermost_postgres_password: 'mattermost'
+mattermost:
+  postgres:
+    database: 'mattermost'
+    user: 'mattermost'
+    password: 'mattermost'

@@ -42,9 +42,9 @@
       - '{{ containers_data_path }}/mattermost_postgres/db:/var/lib/postgresql/data'
     env:
       TZ: '{{ timezone }}'
-      POSTGRES_DB: '{{ mattermost_postgres_database }}'
-      POSTGRES_USER: '{{ mattermost_postgres_user }}'
-      POSTGRES_PASSWORD: '{{ mattermost_postgres_password }}'
+      POSTGRES_DB: '{{ mattermost.postgres.database }}'
+      POSTGRES_USER: '{{ mattermost.postgres.user }}'
+      POSTGRES_PASSWORD: '{{ mattermost.postgres.password }}'
     container_default_behavior: 'no_defaults'
     networks_cli_compatible: yes
     purge_networks: yes
@@ -71,11 +71,11 @@
     env:
       TZ: '{{ timezone }}'
       MM_SERVICESETTINGS_SITEURL: 'https://chat.{{ domain_name }}'
-      MM_DBNAME: '{{ mattermost_postgres_database }}'
-      MM_USERNAME: '{{ mattermost_postgres_user }}'
-      MM_PASSWORD: '{{ mattermost_postgres_password }}'
+      MM_DBNAME: '{{ mattermost.postgres.database }}'
+      MM_USERNAME: '{{ mattermost.postgres.user }}'
+      MM_PASSWORD: '{{ mattermost.postgres.password }}'
       MM_SQLSETTINGS_DRIVERNAME: 'postgres'
-      MM_SQLSETTINGS_DATASOURCE: 'postgres://{{ mattermost_postgres_user }}:{{ mattermost_postgres_password }}@mattermost_postgres:5432/{{ mattermost_postgres_database }}?sslmode=disable&connect_timeout=10'
+      MM_SQLSETTINGS_DATASOURCE: 'postgres://{{ mattermost.postgres.user }}:{{ mattermost.postgres.password }}@mattermost_postgres:5432/{{ mattermost.postgres.database }}?sslmode=disable&connect_timeout=10'
     labels:
       traefik.enable: 'true'
       traefik.http.routers.chat.rule: 'Host(`chat.{{ domain_name }}`)'

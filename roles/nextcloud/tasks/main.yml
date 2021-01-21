@@ -38,10 +38,10 @@
       - '{{ containers_data_path }}/nextcloud_mariadb/db:/var/lib/mysql'
     env:
       TZ: '{{ timezone }}'
-      MYSQL_ROOT_PASSWORD: '{{ nextcloud_mysql_root_password }}'
-      MYSQL_USER: '{{ nextcloud_mysql_user }}'
-      MYSQL_PASSWORD: '{{ nextcloud_mysql_password }}'
-      MYSQL_DATABASE: '{{ nextcloud_mysql_database }}'
+      MYSQL_ROOT_PASSWORD: '{{ nextcloud.mariadb.root_password }}'
+      MYSQL_USER: '{{ nextcloud.mariadb.user }}'
+      MYSQL_PASSWORD: '{{ nextcloud.mariadb.password }}'
+      MYSQL_DATABASE: '{{ nextcloud.mariadb.database }}'
     container_default_behavior: 'no_defaults'
     networks_cli_compatible: yes
     purge_networks: yes
@@ -53,7 +53,7 @@
     name: 'nextcloud_redis'
     image: 'redis:{{ nextcloud_redis_image_tag }}'
     restart_policy: 'unless-stopped'
-    command: '--requirepass {{ nextcloud_redis_password }}'
+    command: '--requirepass {{ nextcloud.redis.password }}'
     networks:
       - name: 'internal'
         aliases: 'nextcloud_redis'
@@ -112,12 +112,12 @@
       TRUSTED_PROXIES: 'traefik'
       OVERWRITEPROTOCOL: 'https'
       NEXTCLOUD_TRUSTED_DOMAINS: 'cloud.{{ domain_name }}'
-      MYSQL_DATABASE: '{{ nextcloud_mysql_database }}'
-      MYSQL_USER: '{{ nextcloud_mysql_user }}'
-      MYSQL_PASSWORD: '{{ nextcloud_mysql_password }}'
-      MYSQL_HOST: '{{ nextcloud_mysql_host }}'
-      REDIS_HOST_PASSWORD: '{{ nextcloud_redis_password }}'
-      REDIS_HOST: '{{ nextcloud_redis_host }}'
+      MYSQL_HOST: 'nextcloud_mariadb'
+      MYSQL_DATABASE: '{{ nextcloud.mariadb.database }}'
+      MYSQL_USER: '{{ nextcloud.mariadb.user }}'
+      MYSQL_PASSWORD: '{{ nextcloud.mariadb.password }}'
+      REDIS_HOST: 'nextcloud_redis'
+      REDIS_HOST_PASSWORD: '{{ nextcloud.redis.password }}'
     labels:
       traefik.enable: 'true'
       traefik.http.routers.cloud.rule: 'Host(`cloud.{{ domain_name }}`)'

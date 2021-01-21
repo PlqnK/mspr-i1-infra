@@ -35,10 +35,10 @@
       - '{{ containers_data_path }}/moodle_mariadb/db:/var/lib/mysql'
     env:
       TZ: '{{ timezone }}'
-      MYSQL_ROOT_PASSWORD: '{{ moodle_mysql_root_password }}'
-      MYSQL_USER: '{{ moodle_mysql_user }}'
-      MYSQL_PASSWORD: '{{ moodle_mysql_password }}'
-      MYSQL_DATABASE: '{{ moodle_mysql_database }}'
+      MYSQL_ROOT_PASSWORD: '{{ moodle.mariadb.root_password }}'
+      MYSQL_USER: '{{ moodle.mariadb.user }}'
+      MYSQL_PASSWORD: '{{ moodle.mariadb.password }}'
+      MYSQL_DATABASE: '{{ moodle.mariadb.database }}'
     container_default_behavior: 'no_defaults'
     networks_cli_compatible: yes
     purge_networks: yes
@@ -60,17 +60,19 @@
       - '{{ containers_data_path }}/moodle:/bitnami/moodle'
     env:
       TZ: '{{ timezone }}'
+      MOODLE_USERNAME: '{{ moodle.user }}'
+      MOODLE_PASSWORD: '{{ moodle.password }}'
       MOODLE_DATABASE_TYPE: 'mariadb'
       MOODLE_DATABASE_HOST: 'moodle_mariadb'
-      MOODLE_DATABASE_NAME: '{{ moodle_mysql_database }}'
-      MOODLE_DATABASE_USER: '{{ moodle_mysql_user }}'
-      MOODLE_DATABASE_PASSWORD: '{{ moodle_mysql_password }}'
+      MOODLE_DATABASE_NAME: '{{ moodle.mariadb.database }}'
+      MOODLE_DATABASE_USER: '{{ moodle.mariadb.user }}'
+      MOODLE_DATABASE_PASSWORD: '{{ moodle.mariadb.password }}'
     labels:
       traefik.enable: 'true'
-      traefik.http.routers.moodle.rule: 'Host(`moodle.{{ domain_name }}`)'
-      traefik.http.routers.moodle.entrypoints: 'websecure'
-      traefik.http.routers.moodle.middlewares: 'set-security-headers@file'
-      traefik.http.services.moodle.loadbalancer.server.port: '8080'
+      traefik.http.routers.learn.rule: 'Host(`learn.{{ domain_name }}`)'
+      traefik.http.routers.learn.entrypoints: 'websecure'
+      traefik.http.routers.learn.middlewares: 'set-security-headers@file'
+      traefik.http.services.learn.loadbalancer.server.port: '8080'
     container_default_behavior: 'no_defaults'
     networks_cli_compatible: yes
     purge_networks: yes

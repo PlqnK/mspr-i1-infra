@@ -1,11 +1,16 @@
 ---
+# The default behavior of Ansible is not to merge a dictionnary defined in separate places and I prefer to leave that
+# as default.
+# That's why I need to define the tag in a separate variable from the dictionnary because I want to be able to redefine
+# the dictionnary and the tag in separate files, respectively `vault/<env>.yml` and inventories/group_vars/all.yml`.
+nextcloud_image_tag: 'latest'
 nextcloud_mariadb_image_tag: 'latest'
 nextcloud_redis_image_tag: 'latest'
-nextcloud_image_tag: 'latest'
-nextcloud_redis_host: 'nextcloud_redis'
-nextcloud_mysql_host: 'nextcloud_mariadb'
-nextcloud_mysql_database: 'nextcloud'
-nextcloud_mysql_user: 'nextcloud'
-nextcloud_mysql_password: 'mysql'
-nextcloud_mysql_root_password: 'mysql'
-nextcloud_redis_password: 'redis'
+nextcloud:
+  mariadb:
+    root_password: 'mysql'
+    user: 'nextcloud'
+    password: 'nextcloud'
+    database: 'nextcloud'
+  redis:
+    password: 'redis'

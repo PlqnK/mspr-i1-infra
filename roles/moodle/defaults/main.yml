@@ -1,7 +1,15 @@
 ---
+# The default behavior of Ansible is not to merge a dictionnary defined in separate places and I prefer to leave that
+# as default.
+# That's why I need to define the tag in a separate variable from the dictionnary because I want to be able to redefine
+# the dictionnary and the tag in separate files, respectively `vault/<env>.yml` and inventories/group_vars/all.yml`.
 moodle_image_tag: 'latest'
 moodle_mariadb_image_tag: 'latest'
-moodle_mysql_root_password: 'moodle'
-moodle_mysql_user: 'moodle'
-moodle_mysql_password: 'moodle'
-moodle_mysql_database: 'moodle'
+moodle:
+  user: 'admin'
+  password: 'admin'
+  mariadb:
+    root_password: 'moodle'
+    user: 'moodle'
+    password: 'moodle'
+    database: 'moodle'

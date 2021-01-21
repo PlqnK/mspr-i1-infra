@@ -32,7 +32,7 @@
 
 {% if getent_passwd.vagrant is none %}
 [certificatesResolvers.le.acme]
-  email = "{{ acme_admin_email }}"
+  email = "{{ traefik.acme.admin_email }}"
   storage = "acme.json"
   [certificatesResolvers.le.acme.tlsChallenge]
 {% endif %}
