@@ -13,37 +13,15 @@
       - 'curl'
       - 'vim'
       - 'git'
+      - 'ufw'
+      - 'python3'
     state: 'present'
 
-- name: 'Install required docker-ce dependencies'
-  ansible.builtin.apt:
-    name:
-      - 'apt-transport-https'
-      - 'ca-certificates'
-      - 'curl'
-      - 'gnupg-agent'
-      - 'software-properties-common'
-    state: 'present'
+- name: 'Allow SSH in firewall'
+  community.general.ufw:
+    rule: 'allow'
+    name: 'OpenSSH'
 
-- name: 'Import docker-ce repository PGP key into apt'
-  ansible.builtin.apt_key:
-    url: 'https://download.docker.com/linux/ubuntu/gpg'
-    state: 'present'
-
-- name: 'Add docker-ce repository'
-  ansible.builtin.apt_repository:
-    repo: 'deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ distribution_release }} stable'
-    state: 'present'
-
-- name: 'Install docker-ce'
-  ansible.builtin.apt:
-    name:
-      - 'docker-ce'
-      - 'docker-ce-cli'
-      - 'containerd.io'
-
-- name: 'Enable and start docker'
-  ansible.builtin.systemd:
-    name: 'docker.service'
-    state: 'started'
-    enabled: yes
+- name: 'Enable the firewall'
+  community.general.ufw:
+    state: 'enabled'
