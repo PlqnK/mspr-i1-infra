@@ -1,0 +1,44 @@
+---
+- name: 'Create DokuWiki config and data directories'
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '1'
+    group: 'root'
+    mode: '0775'
+  loop:
+    - '{{ containers_data_path }}/dokuwiki'
+
+- name: 'Create web-proxy docker network'
+  community.general.docker_network:
+    name: 'web-proxy'
+    state: 'present'
+
+- name: 'Create the DokuWiki container'
+  community.general.docker_container:
+    name: 'dokuwiki'
+    image: 'bitnami/dokuwiki:{{ dokuwiki_image_tag }}'
+    restart_policy: 'unless-stopped'
+    networks:
+      - name: 'web-proxy'
+        aliases: 'dokuwiki'
+    network_mode: 'web-proxy'
+    volumes:
+      - '{{ containers_data_path }}/dokuwiki:/bitnami/dokuwiki'
+    env:
+      TZ: '{{ timezone }}'
+      DOKUWIKI_USERNAME: '{{ dokuwiki.username }}'
+      DOKUWIKI_FULL_NAME: '{{ dokuwiki.full_name }}'
+      DOKUWIKI_PASSWORD: '{{ dokuwiki.password }}'
+      DOKUWIKI_WIKI_NAME: 'DokuWiki'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.wiki.rule: 'Host(`wiki.{{ domain_name }}`)'
+      traefik.http.routers.wiki.entrypoints: 'websecure'
+      traefik.http.routers.wiki.middlewares: 'set-security-headers@file'
+      traefik.http.services.wiki.loadbalancer.server.port: '8080'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
