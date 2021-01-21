@@ -1,0 +1,36 @@
+# "Dummy" ansible-vault file to be used with Vagrant.
+# It's not encrypted but it's useful to serve as a base for a "real" production vault file.
+---
+domain_name: 'localhost.localdomain'
+traefik:
+  api:
+    user: 'traefik'
+    password: 'traefik'
+  acme:
+    admin_email: 'postmaster@example.com'
+nextcloud:
+  mariadb:
+    root_password: 'mysql'
+    user: 'nextcloud'
+    password: 'nextcloud'
+    database: 'nextcloud'
+  redis:
+    password: 'redis'
+mattermost:
+  postgres:
+    database: 'mattermost'
+    user: 'mattermost'
+    password: 'mattermost'
+moodle:
+  user: 'admin'
+  password: 'admin'
+  email: 'admin@example.com'
+  mariadb:
+    root_password: 'moodle'
+    user: 'moodle'
+    password: 'moodle'
+    database: 'moodle'
+dokuwiki:
+  username: 'admin'
+  full_name: 'Administrator'
+  password: 'admin'
