@@ -1,0 +1,104 @@
+---
+- name: 'Checking if provisioning a Vagrant VM'
+  ansible.builtin.getent:
+    database: 'passwd'
+    key: 'vagrant'
+    fail_key: no
+
+# We install python2 and python3 denpendencies because it depends on the interpreter of the Ansible controller.
+- name: 'Install required Ansible dependency'
+  ansible.builtin.apt:
+    name:
+      - 'python-passlib'
+      - 'python-bcrypt'
+      - 'python3-passlib'
+      - 'python3-bcrypt'
+    state: 'present'
+
+- name: 'Create config directory'
+  ansible.builtin.file:
+    path: '{{ containers_config_path }}/traefik'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: 'Check if acme.json exists'
+  ansible.builtin.stat:
+    path: '{{ containers_config_path }}/traefik/acme.json'
+  register: traefik_acme_json_file
+
+- name: 'Create acme.json file'
+  ansible.builtin.file:
+    path: '{{ containers_config_path }}/traefik/acme.json'
+    state: 'touch'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  when: not traefik_acme_json_file.stat.exists
+
+- name: 'Create trafik config files from template'
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  loop:
+    - src: 'traefik.toml.j2'
+      dest: '{{ containers_config_path }}/traefik/traefik.toml'
+    - src: 'traefik-dynamic.toml.j2'
+      dest: '{{ containers_config_path }}/traefik/traefik-dynamic.toml'
+
+- name: 'Authorize HTTP and HTTPS in firewall'
+  community.general.ufw:
+    rule: 'allow'
+    port: '{{ item }}'
+    proto: 'tcp'
+  loop:
+    - 'http'
+    - 'https'
+
+- name: 'Create web-proxy and socket-proxy docker networks'
+  community.general.docker_network:
+    name: '{{ item.name }}'
+    internal: '{{ item.internal }}'
+    state: 'present'
+  loop:
+    - name: 'web-proxy'
+      internal: no
+    - name: 'socket-proxy'
+      internal: yes
+
+- name: 'Create the Traefik container'
+  community.general.docker_container:
+    name: 'traefik'
+    image: 'traefik:{{ traefik_image_tag }}'
+    restart_policy: 'unless-stopped'
+    networks:
+      - name: 'web-proxy'
+        aliases: 'traefik'
+      - name: 'socket-proxy'
+        aliases: 'traefik'
+    network_mode: 'web-proxy'
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - '{{ containers_config_path }}/traefik/acme.json:/acme.json'
+      - '{{ containers_config_path }}/traefik/traefik.toml:/etc/traefik/traefik.toml'
+      - '{{ containers_config_path }}/traefik/traefik-dynamic.toml:/etc/traefik/traefik-dynamic.toml'
+    env:
+      TZ: '{{ timezone }}'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.traefik.rule: 'Host(`traefik.{{ domain_name }}`)'
+      traefik.http.routers.traefik.entrypoints: 'websecure'
+      traefik.http.routers.traefik.service: 'api@internal'
+      traefik.http.routers.traefik.middlewares: 'set-security-headers@file, traefik-auth'
+      traefik.http.middlewares.traefik-auth.basicauth.users: "{{ traefik_api_user }}:{{ traefik_api_password | password_hash('bcrypt', ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890' | shuffle(seed=inventory_hostname) | join)[:21] + ('Oeu' | shuffle(seed=inventory_hostname) | join)[1]) }}"
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'

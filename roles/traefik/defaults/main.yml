@@ -1,0 +1,5 @@
+---
+traefik_image_tag: 'latest'
+traefik_api_user: 'traefik'
+traefik_api_password: 'traefik'
+acme_admin_email: 'postmaster@example.com'
