@@ -2,3 +2,5 @@ all:
   hosts:
     services-host:
       ansible_connection: 'local'
+  vars:
+    domain_name: 'localhost.localdomain'
