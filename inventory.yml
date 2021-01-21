@@ -1,0 +1,4 @@
+all:
+  hosts:
+    services-host:
+      ansible_connection: 'local'
