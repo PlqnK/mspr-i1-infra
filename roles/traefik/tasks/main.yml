@@ -15,22 +15,25 @@
       - 'python3-bcrypt'
     state: 'present'
 
-- name: 'Create config directory'
+- name: 'Create config and data directories'
   ansible.builtin.file:
-    path: '{{ containers_config_path }}/traefik'
+    path: '{{ item }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
+  loop:
+    - '{{ containers_config_path }}/traefik/config'
+    - '{{ containers_data_path }}/traefik/data'
 
 - name: 'Check if acme.json exists'
   ansible.builtin.stat:
-    path: '{{ containers_config_path }}/traefik/acme.json'
+    path: '{{ containers_data_path }}/traefik/data/acme.json'
   register: traefik_acme_json_file
 
 - name: 'Create acme.json file'
   ansible.builtin.file:
-    path: '{{ containers_config_path }}/traefik/acme.json'
+    path: '{{ containers_data_path }}/traefik/data/acme.json'
     state: 'touch'
     owner: 'root'
     group: 'root'
@@ -43,12 +46,12 @@
     dest: '{{ item.dest }}'
     owner: 'root'
     group: 'root'
-    mode: '0644'
+    mode: '0600'
   loop:
     - src: 'traefik.toml.j2'
-      dest: '{{ containers_config_path }}/traefik/traefik.toml'
+      dest: '{{ containers_config_path }}/traefik/config/traefik.toml'
     - src: 'traefik-dynamic.toml.j2'
-      dest: '{{ containers_config_path }}/traefik/traefik-dynamic.toml'
+      dest: '{{ containers_config_path }}/traefik/config/traefik-dynamic.toml'
 
 - name: 'Authorize HTTP and HTTPS in firewall'
   community.general.ufw:
@@ -85,9 +88,9 @@
       - '80:80'
       - '443:443'
     volumes:
-      - '{{ containers_config_path }}/traefik/acme.json:/acme.json'
-      - '{{ containers_config_path }}/traefik/traefik.toml:/etc/traefik/traefik.toml'
-      - '{{ containers_config_path }}/traefik/traefik-dynamic.toml:/etc/traefik/traefik-dynamic.toml'
+      - '{{ containers_config_path }}/traefik/config/traefik.toml:/etc/traefik/traefik.toml'
+      - '{{ containers_config_path }}/traefik/config/traefik-dynamic.toml:/etc/traefik/traefik-dynamic.toml'
+      - '{{ containers_data_path }}/traefik/data/acme.json:/acme.json'
     env:
       TZ: '{{ timezone }}'
     labels:

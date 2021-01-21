@@ -1,27 +1,17 @@
 ---
-- name: 'Create config directory'
+- name: 'Create Nextcloud config and data directories'
   ansible.builtin.file:
-    path: '{{ containers_config_path }}/nextcloud'
+    path: '{{ item }}'
     state: 'directory'
-    owner: '33'
-    group: 'root'
-    mode: '0755'
+  loop:
+    - '{{ containers_config_path }}/nextcloud/config'
+    - '{{ containers_config_path }}/nextcloud/themes'
+    - '{{ containers_data_path }}/nextcloud'
 
-- name: 'Create data directory'
+- name: 'Create MariaDB data directory'
   ansible.builtin.file:
-    path: '{{ containers_data_path }}/nextcloud'
+    path: '{{ containers_data_path }}/nextcloud_mariadb/db'
     state: 'directory'
-    owner: '33'
-    group: 'root'
-    mode: '0755'
-
-- name: 'Create database directory'
-  ansible.builtin.file:
-    path: '{{ containers_data_path }}/nextcloud_mariadb'
-    state: 'directory'
-    owner: '999'
-    group: '999'
-    mode: '0755'
 
 - name: 'Create web-proxy and internal docker networks'
   community.general.docker_network:
@@ -45,7 +35,7 @@
         aliases: 'nextcloud_mariadb'
     network_mode: 'internal'
     volumes:
-      - '{{ containers_data_path }}/nextcloud_mariadb:/var/lib/mysql'
+      - '{{ containers_data_path }}/nextcloud_mariadb/db:/var/lib/mysql'
     env:
       TZ: '{{ timezone }}'
       MYSQL_ROOT_PASSWORD: '{{ nextcloud_mysql_root_password }}'
@@ -90,8 +80,9 @@
         aliases: 'nextcloud_cron'
     network_mode: 'internal'
     volumes:
-      - '{{ containers_config_path }}/nextcloud:/var/www/html'
-      - '{{ containers_data_path }}/nextcloud:/var/www/html/data'
+      - '{{ containers_data_path }}/nextcloud:/var/www/html'
+      - '{{ containers_config_path }}/nextcloud/config:/var/www/html/config'
+      - '{{ containers_config_path }}/nextcloud/themes:/var/www/html/themes'
     env:
       TZ: '{{ timezone }}'
     container_default_behavior: 'no_defaults'
@@ -112,8 +103,9 @@
         aliases: 'nextcloud'
     network_mode: 'web-proxy'
     volumes:
-      - '{{ containers_config_path }}/nextcloud:/var/www/html'
-      - '{{ containers_data_path }}/nextcloud:/var/www/html/data'
+      - '{{ containers_data_path }}/nextcloud:/var/www/html'
+      - '{{ containers_config_path }}/nextcloud/config:/var/www/html/config'
+      - '{{ containers_config_path }}/nextcloud/themes:/var/www/html/themes'
     env:
       TZ: '{{ timezone }}'
       APACHE_DISABLE_REWRITE_IP: '1'
