@@ -1,0 +1,7 @@
+---
+moodle_image_tag: 'latest'
+moodle_mariadb_image_tag: 'latest'
+moodle_mysql_root_password: 'moodle'
+moodle_mysql_user: 'moodle'
+moodle_mysql_password: 'moodle'
+moodle_mysql_database: 'moodle'

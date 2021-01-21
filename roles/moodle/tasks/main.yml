@@ -1,0 +1,78 @@
+---
+- name: 'Create Moodle config and data directories'
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: 'directory'
+  loop:
+    - '{{ containers_data_path }}/moodle'
+
+- name: 'Create MariaDB data directory'
+  ansible.builtin.file:
+    path: '{{ containers_data_path }}/moodle_mariadb/db'
+    state: 'directory'
+
+- name: 'Create docker networks'
+  community.general.docker_network:
+    name: '{{ item.name }}'
+    internal: '{{ item.internal }}'
+    state: 'present'
+  loop:
+    - name: 'web-proxy'
+      internal: no
+    - name: 'internal'
+      internal: yes
+
+- name: 'Create the MariaDB container'
+  community.general.docker_container:
+    name: 'moodle_mariadb'
+    image: 'mariadb:{{ moodle_mariadb_image_tag }}'
+    restart_policy: 'unless-stopped'
+    networks:
+      - name: 'internal'
+        aliases: 'moodle_mariadb'
+    network_mode: 'internal'
+    volumes:
+      - '{{ containers_data_path }}/moodle_mariadb/db:/var/lib/mysql'
+    env:
+      TZ: '{{ timezone }}'
+      MYSQL_ROOT_PASSWORD: '{{ moodle_mysql_root_password }}'
+      MYSQL_USER: '{{ moodle_mysql_user }}'
+      MYSQL_PASSWORD: '{{ moodle_mysql_password }}'
+      MYSQL_DATABASE: '{{ moodle_mysql_database }}'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
+
+- name: 'Create the Moodle container'
+  community.general.docker_container:
+    name: 'moodle'
+    image: 'bitnami/moodle:{{ moodle_image_tag }}'
+    restart_policy: 'unless-stopped'
+    networks:
+      - name: 'web-proxy'
+        aliases: 'moodle'
+      - name: 'internal'
+        aliases: 'moodle'
+    network_mode: 'web-proxy'
+    volumes:
+      - '{{ containers_data_path }}/moodle:/bitnami/moodle'
+    env:
+      TZ: '{{ timezone }}'
+      MOODLE_DATABASE_TYPE: 'mariadb'
+      MOODLE_DATABASE_HOST: 'moodle_mariadb'
+      MOODLE_DATABASE_NAME: '{{ moodle_mysql_database }}'
+      MOODLE_DATABASE_USER: '{{ moodle_mysql_user }}'
+      MOODLE_DATABASE_PASSWORD: '{{ moodle_mysql_password }}'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.moodle.rule: 'Host(`moodle.{{ domain_name }}`)'
+      traefik.http.routers.moodle.entrypoints: 'websecure'
+      traefik.http.routers.moodle.middlewares: 'set-security-headers@file'
+      traefik.http.services.moodle.loadbalancer.server.port: '8080'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
