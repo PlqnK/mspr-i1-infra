@@ -39,9 +39,9 @@
     env:
       TZ: '{{ timezone }}'
       MYSQL_ROOT_PASSWORD: '{{ nextcloud_mysql_root_password }}'
+      MYSQL_USER: '{{ nextcloud_mysql_user }}'
       MYSQL_PASSWORD: '{{ nextcloud_mysql_password }}'
       MYSQL_DATABASE: '{{ nextcloud_mysql_database }}'
-      MYSQL_USER: '{{ nextcloud_mysql_user }}'
     container_default_behavior: 'no_defaults'
     networks_cli_compatible: yes
     purge_networks: yes
