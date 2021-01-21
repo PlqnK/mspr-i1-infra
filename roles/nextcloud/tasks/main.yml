@@ -27,7 +27,7 @@
 - name: 'Create the MariaDB container'
   community.general.docker_container:
     name: 'nextcloud_mariadb'
-    image: 'mariadb:{{ mariadb_image_tag }}'
+    image: 'mariadb:{{ nextcloud_mariadb_image_tag }}'
     restart_policy: 'unless-stopped'
     command: '--transaction-isolation=READ-COMMITTED --log-bin --binlog-format=ROW'
     networks:
@@ -51,7 +51,7 @@
 - name: 'Create the Redis container'
   community.general.docker_container:
     name: 'nextcloud_redis'
-    image: 'redis:{{ redis_image_tag }}'
+    image: 'redis:{{ nextcloud_redis_image_tag }}'
     restart_policy: 'unless-stopped'
     command: '--requirepass {{ nextcloud_redis_password }}'
     networks:

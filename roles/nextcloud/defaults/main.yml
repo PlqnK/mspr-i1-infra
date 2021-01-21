@@ -1,6 +1,6 @@
 ---
-mariadb_image_tag: 'latest'
-redis_image_tag: 'latest'
+nextcloud_mariadb_image_tag: 'latest'
+nextcloud_redis_image_tag: 'latest'
 nextcloud_image_tag: 'latest'
 nextcloud_redis_host: 'nextcloud_redis'
 nextcloud_mysql_host: 'nextcloud_mariadb'
