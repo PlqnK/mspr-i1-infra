@@ -22,8 +22,10 @@ Vagrant.configure("2") do |config|
       hv.memory = 4096
     end
     subconfig.vm.provision "Provision with Ansible", type: "ansible_local" do |ansible|
+      ansible.galaxy_role_file = "requirements.yml"
+      ansible.galaxy_command = "ansible-galaxy collection install --requirements-file=%{role_file} --force"
+      ansible.inventory_path = "inventories/vagrant.yml"
       ansible.playbook = "playbook.yml"
-      ansible.inventory_path = "inventory.yml"
       ansible.limit = "all"
     end
   end
