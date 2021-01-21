@@ -1,6 +1,21 @@
 all:
   hosts:
     services-host:
+      ansible_host: 'localhost.localdomain'
       ansible_connection: 'local'
-  vars:
-    domain_name: 'localhost.localdomain'
+  children:
+    nextcloud:
+      hosts:
+        services-host:
+    mattermost:
+      hosts:
+        services-host:
+    rocketchat:
+      hosts:
+        services-host:
+    moodle:
+      hosts:
+        services-host:
+    dokuwiki:
+      hosts:
+        services-host:

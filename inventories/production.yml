@@ -1,0 +1,22 @@
+all:
+  children:
+    nextcloud:
+      hosts:
+        nextcloud-host:
+          ansible_host: '10.1.6.11'
+    mattermost:
+      hosts:
+        mattermost-host:
+          ansible_host: '10.1.6.14'
+    rocketchat:
+      hosts:
+        rocketchat-host:
+          ansible_host: '10.1.6.14'
+    moodle:
+      hosts:
+        moodle-host:
+          ansible_host: '10.1.6.12'
+    dokuwiki:
+      hosts:
+        dokuwiki-host:
+          ansible_host: '10.1.6.13'

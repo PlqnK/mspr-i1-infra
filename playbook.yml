@@ -1,18 +1,39 @@
 ---
-- name: 'Setup the host'
-  hosts: 'services-host'
+- name: 'Common configuration and programs'
+  hosts: 'all'
   become: yes
   roles:
     - 'ubuntu-setup'
     - 'docker-setup'
-
-- name: 'Setup the services'
-  hosts: 'services-host'
-  become: yes
-  roles:
     - 'docker-socket-proxy'
     - 'traefik'
+
+- name: 'Setup Nextcloud'
+  hosts: 'nextcloud'
+  become: yes
+  roles:
     - 'nextcloud'
+
+#- name: 'Setup Mattermost'
+#  hosts: 'mattermost'
+#  become: yes
+#  roles:
 #    - 'mattermost'
+
+- name: 'Setup Rocket.Chat'
+  hosts: 'rocketchat'
+  become: yes
+  roles:
     - 'rocket-chat'
+
+- name: 'Setup Moodle'
+  hosts: 'moodle'
+  become: yes
+  roles:
     - 'moodle'
+
+- name: 'Setup DokuWiki'
+  hosts: 'dokuwiki'
+  become: yes
+  roles:
+    - 'dokuwiki'
