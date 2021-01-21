@@ -21,6 +21,11 @@ Vagrant.configure("2") do |config|
       hv.cpus = 2
       hv.memory = 4096
     end
+    subconfig.vm.provider "vmware_desktop" do |vw|
+      vw.gui = false
+      vw.cpus = 2
+      vw.memory = 4096
+    end
     subconfig.vm.provision "Provision with Ansible", type: "ansible_local" do |ansible|
       ansible.galaxy_role_file = "requirements.yml"
       ansible.galaxy_command = "ansible-galaxy collection install --requirements-file=%{role_file} --force"
