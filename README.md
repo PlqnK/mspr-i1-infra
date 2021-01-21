@@ -22,7 +22,7 @@ Le tout sous docker avec Traefik comme reverse-proxy.
   - Virtualbox
   - Hyper-V
   - VMware Workstation
-- Un résolveur DNS local qui est capable de résolver `*.localhost.localdomain` vers `127.0.0.1`, au choix:
+- Un résolveur DNS local qui est capable de résoudre `*.localhost.localdomain` vers `127.0.0.1`, au choix:
   - `systemd-resolved` sur Linux
   - `dnsmasq` sur Linux ou macOS
   - `Acrylic DNS` sur Windows
