@@ -13,3 +13,5 @@
     - 'docker-socket-proxy'
     - 'traefik'
     - 'nextcloud'
+#    - 'mattermost'
+    - 'rocket-chat'

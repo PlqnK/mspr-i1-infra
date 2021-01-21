@@ -1,0 +1,92 @@
+---
+- name: 'Create Rocket.Chat data directory'
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '999'
+    group: '999'
+    mode: '0755'
+  loop:
+    - '{{ containers_data_path }}/rocketchat/uploads'
+
+- name: 'Create MongoDB data directory'
+  ansible.builtin.file:
+    path: '{{ containers_data_path }}/rocketchat_mongo/db'
+    state: 'directory'
+
+- name: 'Create web-proxy and internal docker networks'
+  community.general.docker_network:
+    name: '{{ item.name }}'
+    internal: '{{ item.internal }}'
+    state: 'present'
+  loop:
+    - name: 'web-proxy'
+      internal: no
+    - name: 'internal'
+      internal: yes
+
+- name: 'Create the MongoDB container'
+  community.general.docker_container:
+    name: 'rocketchat_mongo'
+    image: 'mongo:{{ rocketchat_mongo_image_tag }}'
+    restart_policy: 'unless-stopped'
+    command: '--smallfiles --oplogSize 128 --replSet rs01'
+    networks:
+      - name: 'internal'
+        aliases: 'rocketchat_mongo'
+    network_mode: 'internal'
+    volumes:
+      - '{{ containers_data_path }}/rocketchat_mongo/db:/data/db'
+    env:
+      TZ: '{{ timezone }}'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
+
+- name: 'Init MongoDB replica'
+  community.general.docker_container:
+    name: 'rocketchat_mongo-init-replica'
+    image: 'mongo:{{ rocketchat_mongo_image_tag }}'
+    command: 'mongo rocketchat_mongo/rocketchat --eval "rs.initiate({ _id: ''rs01'', members: [ { _id: 0, host: ''localhost:27017'' } ]})"'
+    networks:
+      - name: 'internal'
+    network_mode: 'internal'
+    env:
+      TZ: '{{ timezone }}'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
+
+- name: 'Create the Rocket.Chat container'
+  community.general.docker_container:
+    name: 'rocketchat'
+    image: 'rocket.chat:{{ rocketchat_image_tag }}'
+    restart_policy: 'unless-stopped'
+    networks:
+      - name: 'web-proxy'
+        aliases: 'rocketchat'
+      - name: 'internal'
+        aliases: 'rocketchat'
+    network_mode: 'web-proxy'
+    volumes:
+      - '{{ containers_data_path }}/rocketchat/uploads:/app/uploads'
+    env:
+      TZ: '{{ timezone }}'
+      ROOT_URL: 'https://chat.{{ domain_name }}'
+      MONGO_URL: mongodb://rocketchat_mongo:27017/rocketchat
+      MONGO_OPLOG_URL: 'mongodb://rocketchat_mongo:27017/local'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.chat.rule: 'Host(`chat.{{ domain_name }}`)'
+      traefik.http.routers.chat.entrypoints: 'websecure'
+      traefik.http.routers.chat.middlewares: 'set-security-headers@file'
+      traefik.http.services.chat.loadbalancer.server.port: '3000'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'

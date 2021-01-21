@@ -1,0 +1,89 @@
+---
+- name: 'Create Mattermost config and data directories'
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '2000'
+    group: '2000'
+    mode: '0755'
+  loop:
+    - '{{ containers_config_path }}/mattermost/config'
+    - '{{ containers_data_path }}/mattermost/data'
+    - '{{ containers_data_path }}/mattermost/logs'
+    - '{{ containers_data_path }}/mattermost/plugins'
+    - '{{ containers_data_path }}/mattermost/client-plugins'
+
+- name: 'Create PostgreSQL data directory'
+  ansible.builtin.file:
+    path: '{{ containers_data_path }}/mattermost_postgres/db'
+    state: 'directory'
+
+- name: 'Create web-proxy and internal docker networks'
+  community.general.docker_network:
+    name: '{{ item.name }}'
+    internal: '{{ item.internal }}'
+    state: 'present'
+  loop:
+    - name: 'web-proxy'
+      internal: no
+    - name: 'internal'
+      internal: yes
+
+- name: 'Create the PostgreSQL container'
+  community.general.docker_container:
+    name: 'mattermost_postgres'
+    image: 'postgres:{{ mattermost_postgres_image_tag }}'
+    restart_policy: 'unless-stopped'
+    networks:
+      - name: 'internal'
+        aliases: 'mattermost_postgres'
+    network_mode: 'internal'
+    volumes:
+      - '{{ containers_data_path }}/mattermost_postgres/db:/var/lib/postgresql/data'
+    env:
+      TZ: '{{ timezone }}'
+      POSTGRES_DB: '{{ mattermost_postgres_database }}'
+      POSTGRES_USER: '{{ mattermost_postgres_user }}'
+      POSTGRES_PASSWORD: '{{ mattermost_postgres_password }}'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
+
+- name: 'Create the Mattermost container'
+  community.general.docker_container:
+    name: 'mattermost'
+    image: 'mattermost/mattermost-team-edition:{{ mattermost_image_tag }}'
+    restart_policy: 'unless-stopped'
+    networks:
+      - name: 'web-proxy'
+        aliases: 'mattermost'
+      - name: 'internal'
+        aliases: 'mattermost'
+    network_mode: 'web-proxy'
+    volumes:
+      - '{{ containers_config_path }}/mattermost/config:/mattermost/config'
+      - '{{ containers_data_path }}/mattermost/data:/mattermost/data'
+      - '{{ containers_data_path }}/mattermost/logs:/mattermost/logs'
+      - '{{ containers_data_path }}/mattermost/plugins:/mattermost/plugins'
+      - '{{ containers_data_path }}/mattermost/client-plugins:/mattermost/client/plugins'
+    env:
+      TZ: '{{ timezone }}'
+      MM_SERVICESETTINGS_SITEURL: 'https://chat.{{ domain_name }}'
+      MM_DBNAME: '{{ mattermost_postgres_database }}'
+      MM_USERNAME: '{{ mattermost_postgres_user }}'
+      MM_PASSWORD: '{{ mattermost_postgres_password }}'
+      MM_SQLSETTINGS_DRIVERNAME: 'postgres'
+      MM_SQLSETTINGS_DATASOURCE: 'postgres://{{ mattermost_postgres_user }}:{{ mattermost_postgres_password }}@mattermost_postgres:5432/{{ mattermost_postgres_database }}?sslmode=disable&connect_timeout=10'
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.chat.rule: 'Host(`chat.{{ domain_name }}`)'
+      traefik.http.routers.chat.entrypoints: 'websecure'
+      traefik.http.routers.chat.middlewares: 'set-security-headers@file'
+      traefik.http.services.chat.loadbalancer.server.port: '8065'
+    container_default_behavior: 'no_defaults'
+    networks_cli_compatible: yes
+    purge_networks: yes
+    pull: yes
+    state: 'started'
