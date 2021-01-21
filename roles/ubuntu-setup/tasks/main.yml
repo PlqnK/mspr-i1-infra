@@ -17,10 +17,21 @@
       - 'python3'
     state: 'present'
 
+- name: 'Configure default access rules in firewall'
+  community.general.ufw:
+    default: '{{ item.default }}'
+    direction: '{{ item.direction }}'
+  loop:
+    - default: 'deny'
+      direction: 'incoming'
+    - default: 'allow'
+      direction: 'outgoing'
+
 - name: 'Allow SSH in firewall'
   community.general.ufw:
     rule: 'allow'
-    name: 'OpenSSH'
+    port: 'ssh'
+    proto: 'tcp'
 
 - name: 'Enable the firewall'
   community.general.ufw:
