@@ -52,7 +52,10 @@ La documentation de Vagrant est disponible ici : <https://www.vagrantup.com/docs
 Pour le contrôleur Ansible:
 
 - Linux, macOS ou Windows avec WSL
-- Ansible et le SDK Docker pour python d'installé (aussi connu sous le nom `docker-py`)
+- Ansible 2.10 d'installé
+- Les bibliothèques python suivantes d'installées:
+  - `passlib`
+  - `bcrypt`
 - Une clé SSH
 
 Pour les hôtes de services:
@@ -64,5 +67,6 @@ Pour les hôtes de services:
 ### Déploiement
 
 ```bash
+ansible-galaxy collection install -r requirements.yml
 ansible-playbook -i inventories/production.yml playbook.yml -e @vaults/production.yml --ask-vault-pass
 ```
