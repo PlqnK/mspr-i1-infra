@@ -5,16 +5,6 @@
     key: 'vagrant'
     fail_key: no
 
-# We install python2 and python3 denpendencies because it depends on the interpreter of the Ansible controller.
-- name: 'Install required Ansible dependency'
-  ansible.builtin.apt:
-    name:
-      - 'python-passlib'
-      - 'python-bcrypt'
-      - 'python3-passlib'
-      - 'python3-bcrypt'
-    state: 'present'
-
 - name: 'Create config and data directories'
   ansible.builtin.file:
     path: '{{ item }}'
