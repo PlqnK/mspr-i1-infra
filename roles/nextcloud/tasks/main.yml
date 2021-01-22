@@ -76,9 +76,11 @@
     restart_policy: 'unless-stopped'
     entrypoint: '/cron.sh'
     networks:
+      - name: 'web-proxy'
+        aliases: 'nextcloud_cron'
       - name: 'internal'
         aliases: 'nextcloud_cron'
-    network_mode: 'internal'
+    network_mode: 'web-proxy'
     volumes:
       - '{{ containers_data_path }}/nextcloud:/var/www/html'
       - '{{ containers_config_path }}/nextcloud/config:/var/www/html/config'
