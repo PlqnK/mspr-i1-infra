@@ -27,9 +27,9 @@ Vagrant.configure("2") do |config|
       vw.memory = 4096
     end
     config.vm.provision "Install Ansible", type: "shell", inline: <<-SHELL
-      which pip3 &>/dev/null || apt-get update && apt-get install -y python3-pip
+      which pip3 &>/dev/null || (apt-get update && apt-get install -y python3-pip)
       for package in ansible passlib bcrypt; do
-        pip3 list --format=legacy | grep "${package}" &>/dev/null || pip3 install "${package}"
+        pip3 list --format=columns | grep "${package}" &>/dev/null || pip3 install "${package}"
       done
     SHELL
     subconfig.vm.provision "Provision with Ansible", type: "ansible_local" do |ansible|
