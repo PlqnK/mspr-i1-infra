@@ -14,7 +14,7 @@
   [entryPoints.websecure]
     address = ":443"
     [entryPoints.websecure.http.tls]
-{% if not is_local_env %}
+{% if target_environment != "local" %}
       certResolver = "le"
 {% endif %}
 
@@ -30,7 +30,7 @@
     filename = "/etc/traefik/traefik-dynamic.toml"
     watch = true
 
-{% if not is_local_env %}
+{% if target_environment != "local" %}
 [certificatesResolvers.le.acme]
   email = "{{ traefik.acme.admin_email }}"
   storage = "acme.json"

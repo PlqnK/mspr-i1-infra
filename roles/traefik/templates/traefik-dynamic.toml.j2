@@ -1,7 +1,7 @@
 [tls.options]
   [tls.options.default]
     minVersion = "VersionTLS12"
-{% if is_local_env %}
+{% if target_environment == "local" %}
     sniStrict = false
 {% else %}
     sniStrict = true

@@ -21,4 +21,4 @@ all:
         dokuwiki-host:
           ansible_host: '10.1.6.13'
   vars:
-    is_local_env: no
+    target_environment: 'production'
