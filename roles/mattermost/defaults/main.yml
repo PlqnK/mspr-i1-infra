@@ -1,5 +1,7 @@
 ---
 timezone: 'UTC'
+containers_config_path: '/opt/containers/config'
+containers_data_path: '/opt/containers/data'
 # The default behavior of Ansible is not to merge a dictionnary defined in separate places and I prefer to leave that
 # as default.
 # That's why I need to define the tag in a separate variable from the dictionnary because I want to be able to redefine

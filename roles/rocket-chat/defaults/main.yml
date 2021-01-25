@@ -1,4 +1,6 @@
 ---
 timezone: 'UTC'
+containers_config_path: '/opt/containers/config'
+containers_data_path: '/opt/containers/data'
 rocketchat_image_tag: 'latest'
 rocketchat_mongo_image_tag: '4.0'
