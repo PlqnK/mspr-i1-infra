@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: 'ufw-setup'
+  - role: 'docker-install'
+  - role: 'docker-socket-proxy'
