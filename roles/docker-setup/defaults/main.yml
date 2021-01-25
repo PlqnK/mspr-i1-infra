@@ -1,0 +1,3 @@
+---
+containers_config_path: '/opt/containers/config'
+containers_data_path: '/opt/containers/data'
