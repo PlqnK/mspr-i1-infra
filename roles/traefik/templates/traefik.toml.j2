@@ -14,7 +14,7 @@
   [entryPoints.websecure]
     address = ":443"
     [entryPoints.websecure.http.tls]
-{% if getent_passwd.vagrant is none %}
+{% if not is_local_env %}
       certResolver = "le"
 {% endif %}
 
@@ -30,7 +30,7 @@
     filename = "/etc/traefik/traefik-dynamic.toml"
     watch = true
 
-{% if getent_passwd.vagrant is none %}
+{% if not is_local_env %}
 [certificatesResolvers.le.acme]
   email = "{{ traefik.acme.admin_email }}"
   storage = "acme.json"

@@ -19,3 +19,5 @@ all:
     dokuwiki:
       hosts:
         services-host:
+  vars:
+    is_local_env: yes

@@ -1,10 +1,4 @@
 ---
-- name: 'Checking if provisioning a Vagrant VM'
-  ansible.builtin.getent:
-    database: 'passwd'
-    key: 'vagrant'
-    fail_key: no
-
 - name: 'Create config and data directories'
   ansible.builtin.file:
     path: '{{ item }}'

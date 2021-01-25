@@ -1,10 +1,10 @@
 [tls.options]
   [tls.options.default]
     minVersion = "VersionTLS12"
-{% if getent_passwd.vagrant is none %}
-    sniStrict = true
-{% else %}
+{% if is_local_env %}
     sniStrict = false
+{% else %}
+    sniStrict = true
 {% endif %}
     cipherSuites = [
       "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
