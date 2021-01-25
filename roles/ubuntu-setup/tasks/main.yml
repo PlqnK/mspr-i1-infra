@@ -1,10 +1,4 @@
 ---
-- name: 'Upgrade all packages'
-  ansible.builtin.apt:
-    name: '*'
-    state: 'latest'
-    update_cache: yes
-
 - name: 'Install useful packages'
   ansible.builtin.apt:
     name:
