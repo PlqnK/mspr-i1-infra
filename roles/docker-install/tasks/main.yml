@@ -1,8 +1,10 @@
 ---
-- name: 'Install required Ansible dependecies'
+- name: 'Install required Ansible dependency'
   ansible.builtin.apt:
     name: 'python3-docker'
     state: 'present'
+    update_cache: yes
+    cache_valid_time: 3600
 
 - name: 'Install required Docker CE dependencies'
   ansible.builtin.apt:
@@ -38,11 +40,3 @@
     name: 'docker.service'
     state: 'started'
     enabled: yes
-
-- name: 'Create containers configuration files and data directories'
-  ansible.builtin.file:
-    path: '{{ item }}'
-    state: 'directory'
-  loop:
-    - '{{ containers_config_path }}'
-    - '{{ containers_data_path }}'
