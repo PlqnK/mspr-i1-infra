@@ -1,15 +1,10 @@
 ---
-- name: 'Install useful packages'
+- name: 'Install firewall'
   ansible.builtin.apt:
-    name:
-      - 'rsync'
-      - 'htop'
-      - 'curl'
-      - 'vim'
-      - 'git'
-      - 'ufw'
-      - 'python3'
+    name: 'ufw'
     state: 'present'
+    update_cache: yes
+    cache_valid_time: 3600
 
 - name: 'Configure default access rules in firewall'
   community.general.ufw:
