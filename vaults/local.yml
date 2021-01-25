@@ -1,4 +1,4 @@
-# "Dummy" ansible-vault file to be used with Vagrant.
+# "Dummy" ansible-vault file to be used with local development environment.
 # It's not encrypted but it's useful to serve as a base for a "real" production vault file.
 ---
 domain_name: 'localhost.localdomain'
