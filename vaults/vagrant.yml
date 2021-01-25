@@ -4,7 +4,7 @@
 domain_name: 'localhost.localdomain'
 traefik:
   api:
-    user: 'traefik'
+    user: 'admin'
     password: 'traefik'
   acme:
     admin_email: 'postmaster@example.com'
@@ -23,14 +23,14 @@ mattermost:
     password: 'mattermost'
 moodle:
   user: 'admin'
-  password: 'admin'
+  password: 'moodle'
   email: 'admin@example.com'
   mariadb:
-    root_password: 'moodle'
+    root_password: 'mysql'
     user: 'moodle'
     password: 'moodle'
     database: 'moodle'
 dokuwiki:
   username: 'admin'
   full_name: 'Administrator'
-  password: 'admin'
+  password: 'dokuwiki'
