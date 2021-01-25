@@ -30,7 +30,7 @@
 - name: 'Allow SSH in firewall'
   community.general.ufw:
     rule: 'allow'
-    port: 'ssh'
+    port: '22'
     proto: 'tcp'
 
 - name: 'Enable the firewall'

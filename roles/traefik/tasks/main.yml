@@ -49,8 +49,8 @@
     port: '{{ item }}'
     proto: 'tcp'
   loop:
-    - 'http'
-    - 'https'
+    - '80'
+    - '443'
 
 - name: 'Create docker networks'
   community.general.docker_network:
