@@ -7,7 +7,7 @@ moodle_image_tag: 'latest'
 moodle_mariadb_image_tag: 'latest'
 moodle:
   user: 'admin'
-  password: 'admin'
+  password: 'moodle'
   mariadb:
     root_password: 'moodle'
     user: 'moodle'

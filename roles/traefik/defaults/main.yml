@@ -6,7 +6,7 @@
 traefik_image_tag: 'latest'
 traefik:
   api:
-    user: 'traefik'
+    user: 'admin'
     password: 'traefik'
   acme:
     admin_email: 'postmaster@example.com'
