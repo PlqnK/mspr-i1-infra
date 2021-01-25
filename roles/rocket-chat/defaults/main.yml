@@ -1,3 +1,4 @@
 ---
+timezone: 'UTC'
 rocketchat_image_tag: 'latest'
 rocketchat_mongo_image_tag: '4.0'
