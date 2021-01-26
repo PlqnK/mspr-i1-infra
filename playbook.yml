@@ -1,39 +1,21 @@
 ---
-- name: 'Common configuration and programs'
+- name: 'Services'
   hosts: 'all'
   become: yes
+  vars_files:
+    - 'vaults/{{ target_environment }}.yml'
   roles:
-    - 'ubuntu-setup'
-    - 'docker-setup'
-    - 'docker-socket-proxy'
+    - 'ufw_setup'
+    - 'docker_install'
+    - 'docker_socket_proxy'
     - 'traefik'
-
-- name: 'Setup Nextcloud'
-  hosts: 'nextcloud'
-  become: yes
-  roles:
-    - 'nextcloud'
-
-#- name: 'Setup Mattermost'
-#  hosts: 'mattermost'
-#  become: yes
-#  roles:
-#    - 'mattermost'
-
-- name: 'Setup Rocket.Chat'
-  hosts: 'rocketchat'
-  become: yes
-  roles:
-    - 'rocket-chat'
-
-- name: 'Setup Moodle'
-  hosts: 'moodle'
-  become: yes
-  roles:
-    - 'moodle'
-
-- name: 'Setup DokuWiki'
-  hosts: 'dokuwiki'
-  become: yes
-  roles:
-    - 'dokuwiki'
+    - role: 'nextcloud'
+      when: '"nextcloud" in group_names'
+    - role: 'mattermost'
+      when: '"mattermost" in group_names'
+    #- role: 'rocketchat'
+    #  when: '"rocketchat" in group_names'
+    - role: 'moodle'
+      when: '"moodle" in group_names'
+    - role: 'dokuwiki'
+      when: '"dokuwiki" in group_names'
