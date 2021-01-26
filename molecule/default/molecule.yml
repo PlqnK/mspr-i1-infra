@@ -1,0 +1,45 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+platforms:
+  - name: instance
+    image: docker.io/geerlingguy/docker-ubuntu1804-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      # Using overlayfs over overlayfs is not supported so we need to mount a directory from the host to the guest
+      # /var/lib/docker using a named volume.
+      - molecule_docker_storage:/var/lib/docker
+    hostname: localhost.localdomain
+    published_ports:
+      - 80:80
+      - 443:443
+    privileged: true
+    pre_build_image: true
+    groups:
+      - nextcloud
+      - mattermost
+      - rocketchat
+      - moodle
+      - dokuwiki
+provisioner:
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        target_environment: 'local'
+        timezone: 'UTC'
+        containers_config_path: '/opt/containers/config'
+        containers_data_path: '/opt/containers/data'
+        domain_name: 'localhost.localdomain'
+  playbooks:
+    prepare: ../resources/playbooks/prepare.yml
+    cleanup: ../resources/playbooks/cleanup.yml
+verifier:
+  name: ansible

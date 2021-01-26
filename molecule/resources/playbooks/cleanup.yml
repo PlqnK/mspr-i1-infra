@@ -1,0 +1,24 @@
+---
+- name: Cleanup
+  hosts: all
+  tasks:
+    # /var/lib/docker is mounted from the host as a named volume. Because docker doesn't delete the volumes attached
+    # to a container when it is destroyed (that's the point of named volumes) we need to manually empty it in order
+    # to start fresh on the next container creation.
+    - name: 'Clean mounted volumes from the host'
+      block:
+      - name: 'Gather services facts'
+        service_facts:
+      - name: 'Stop docker'
+        systemd:
+          name: 'docker.service'
+          state: 'stopped'
+        when: ansible_facts['services']['docker.service'] is defined
+      # The 'file' module with 'state: absent' doesn't work here because Ansible will try to delete the 'docker' folder
+      # and because it's a mounted volume we will get an "rmtree failed: [Errno 16] Device or resource busy" error.
+      # The 'file' module also doesn't have a mean to empty a directory without deleting the directory itself so we
+      # simply use 'rm -rf'.
+      - name: 'Empty /var/lib/docker directory'
+        shell:
+          cmd: 'rm -rf /var/lib/docker/*'
+          warn: false

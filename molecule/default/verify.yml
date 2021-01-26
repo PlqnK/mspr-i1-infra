@@ -1,0 +1,130 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  vars_files:
+    - '../../vaults/{{ target_environment }}.yml'
+  pre_tasks:
+    - name: 'Gathering Packages Facts'
+      package_facts:
+        manager: 'auto'
+    - name: 'Gathering Services Facts'
+      service_facts:
+  tasks:
+    - name: 'Assert that HTTP/HTTPS ports are open'
+      wait_for:
+        host: '{{ ansible_fqdn }}'
+        port: '{{ item }}'
+        state: 'started'
+        delay: 0
+        timeout: 3
+      loop:
+        - '80'
+        - '443'
+      delegate_to: 'localhost'
+    - name: 'Assert that other ports are not open'
+      wait_for:
+        host: '{{ ansible_fqdn }}'
+        port: '{{ item }}'
+        state: 'stopped'
+        delay: 0
+        timeout: 3
+      loop:
+        - '53'
+      delegate_to: 'localhost'
+    - name: 'Assert that docker is installed'
+      assert:
+        that: '"docker-ce" in ansible_facts.packages'
+    - name: 'Assert that docker is enabled and running'
+      assert:
+        that:
+          - ansible_facts['services']['docker.service']['status'] == "enabled"
+          - ansible_facts['services']['docker.service']['state'] == "running"
+    - name: 'Gather facts about socket-proxy network'
+      docker_network_info:
+        name: 'socket-proxy'
+      register: docker_socket_proxy_network_facts
+    - name: 'Assert that socket-proxy network exists and is "internal"'
+      assert:
+        that:
+          - docker_socket_proxy_network_facts.exists
+          - docker_socket_proxy_network_facts.network.Internal
+    - name: 'Gather facts about docker-socket-proxy container'
+      docker_container_info:
+        name: 'docker-socket-proxy'
+      register: docker_socket_proxy_container_facts
+    - name: 'Assert that docker-socket-proxy container exists and is running'
+      assert:
+        that:
+          - docker_socket_proxy_container_facts.exists
+          - docker_socket_proxy_container_facts.container.State.Running
+    - name: 'Gather facts about docker host'
+      docker_host_info:
+      register: docker_host_facts
+    - name: 'Assert that docker API is accessible from docker-socket-proxy'
+      docker_container:
+        name: 'test-docker-socket-proxy'
+        image: 'docker:{{ docker_host_facts.host_info.ServerVersion }}'
+        command: 'docker -H "tcp://docker-socket-proxy:2375" version'
+        networks:
+          - name: 'socket-proxy'
+        network_mode: 'socket-proxy'
+        container_default_behavior: 'no_defaults'
+        networks_cli_compatible: yes
+        purge_networks: yes
+        pull: yes
+        auto_remove: yes
+        detach: no
+      changed_when: false
+    - name: 'Assert that Traefik dashboard is not accessible without authentication'
+      uri:
+        url: 'https://{{ ansible_fqdn }}/traefik'
+        validate_certs: no
+        status_code: 401
+      delegate_to: 'localhost'
+    - name: 'Assert that Traefik dashboard is accessible with authentication'
+      uri:
+        url: 'https://{{ ansible_fqdn }}/traefik'
+        url_username: '{{ traefik.api.user }}'
+        url_password: '{{ traefik.api.password }}'
+        validate_certs: no
+        status_code: 200
+      delegate_to: 'localhost'
+    - name: 'Assert that Traefik API is not accessible without authentication'
+      uri:
+        url: 'https://{{ ansible_fqdn }}/traefik/api/version'
+        validate_certs: no
+        status_code: 401
+      delegate_to: 'localhost'
+    - name: 'Assert that Traefik API is accessible with authentication'
+      uri:
+        url: 'https://{{ ansible_fqdn }}/traefik/api/version'
+        url_username: '{{ traefik.api.user }}'
+        url_password: '{{ traefik.api.password }}'
+        validate_certs: no
+        status_code: 200
+      delegate_to: 'localhost'
+    - name: 'Assert that Nextcloud is accessible'
+      uri:
+        url: 'https://cloud.{{ domain_name }}'
+        validate_certs: no
+        status_code: 200
+      delegate_to: 'localhost'
+    - name: 'Assert that Rocket.Chat is accessible'
+      uri:
+        url: 'https://chat.{{ domain_name }}'
+        validate_certs: no
+        status_code: 200
+      delegate_to: 'localhost'
+    - name: 'Assert that Moodle is accessible'
+      uri:
+        url: 'https://learn.{{ domain_name }}'
+        validate_certs: no
+        status_code: 200
+      delegate_to: 'localhost'
+    - name: 'Assert that DockuWiki is accessible'
+      uri:
+        url: 'https://wiki.{{ domain_name }}'
+        validate_certs: no
+        status_code: 200
+      delegate_to: 'localhost'

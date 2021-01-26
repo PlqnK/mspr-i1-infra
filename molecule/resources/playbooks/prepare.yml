@@ -1,0 +1,28 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    # When using the default bridge docker network, docker replaces the values defined in the guest /etc/resolv.conf
+    # with nameservers and searchdomains gathered from the host. The playbook and roles in this repository assumes that
+    # the guest is using systemd-resolved as it's name resolution service (to be able to resolve *.localhost.localdomain
+    # locally) so we need to replace the resolv.conf file with a symlink to systemd-resolved stub-resolv.conf file.
+    - name: 'Check if /etc/resolv.conf is a symbolic link'
+      stat:
+        path: '/etc/resolv.conf'
+      register: resolvconf
+    - name: '"Enable" systemd-resolved'
+      block:
+        - name: 'Unmount /etc/resolv.conf from host'
+          mount:
+            path: '/etc/resolv.conf'
+            state: 'unmounted'
+        - name: 'Remove existing /etc/resolv.conf'
+          file:
+            path: '/etc/resolv.conf'
+            state: 'absent'
+        - name: 'Link /etc/resolv.conf to /run/systemd/resolve/stub-resolv.conf'
+          file:
+            src: '/run/systemd/resolve/stub-resolv.conf'
+            path: '/etc/resolv.conf'
+            state: 'link'
+      when: not resolvconf.stat.islnk
