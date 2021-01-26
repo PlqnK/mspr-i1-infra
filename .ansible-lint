@@ -1,3 +1,4 @@
 ---
 skip_list:
+  # Ignore missing 'galaxy_info' in roles meta definition
   - '701'
