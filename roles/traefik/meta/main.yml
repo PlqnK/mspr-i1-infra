@@ -1,5 +1,5 @@
 ---
 dependencies:
-  - role: 'ufw-setup'
-  - role: 'docker-install'
-  - role: 'docker-socket-proxy'
+  - role: 'ufw_setup'
+  - role: 'docker_install'
+  - role: 'docker_socket_proxy'
