@@ -75,7 +75,8 @@
       MM_USERNAME: '{{ mattermost.postgres.user }}'
       MM_PASSWORD: '{{ mattermost.postgres.password }}'
       MM_SQLSETTINGS_DRIVERNAME: 'postgres'
-      MM_SQLSETTINGS_DATASOURCE: 'postgres://{{ mattermost.postgres.user }}:{{ mattermost.postgres.password }}@mattermost_postgres:5432/{{ mattermost.postgres.database }}?sslmode=disable&connect_timeout=10'
+      MM_SQLSETTINGS_DATASOURCE: "postgres://{{ mattermost.postgres.user }}:{{ mattermost.postgres.password }}@mattermost_postgres:5432\
+        /{{ mattermost.postgres.database }}?sslmode=disable&connect_timeout=10"
     labels:
       traefik.enable: 'true'
       traefik.http.routers.chat.rule: 'Host(`chat.{{ domain_name }}`)'
