@@ -79,12 +79,15 @@
       TZ: '{{ timezone }}'
     labels:
       traefik.enable: 'true'
-      traefik.http.routers.traefik.rule: 'Host(`{{ ansible_host }}`) && PathPrefix(`/traefik`) || Headers(`Referer`, `https://{{ ansible_host }}/traefik/dashboard/`)'
+      traefik.http.routers.traefik.rule:
+        'Host(`{{ ansible_fqdn }}`) && PathPrefix(`/traefik`) || Headers(`Referer`, `https://{{ ansible_fqdn }}/traefik/dashboard/`)'
       traefik.http.routers.traefik.entrypoints: 'websecure'
       traefik.http.routers.traefik.service: 'api@internal'
       traefik.http.routers.traefik.middlewares: 'set-security-headers@file, traefik-strip-prefix, traefik-auth'
       traefik.http.middlewares.traefik-strip-prefix.stripprefix.prefixes: '/traefik'
-      traefik.http.middlewares.traefik-auth.basicauth.users: "{{ traefik.api.user }}:{{ traefik.api.password | password_hash('bcrypt', ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890' | shuffle(seed=inventory_hostname) | join)[:21] + ('Oeu' | shuffle(seed=inventory_hostname) | join)[1]) }}"
+      traefik.http.middlewares.traefik-auth.basicauth.users: >-
+        {{ traefik.api.user }}:{{ traefik.api.password | password_hash('bcrypt', ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+        | shuffle(seed=inventory_hostname) | join)[:21] + ('Oeu' | shuffle(seed=inventory_hostname) | join)[1]) }}
     container_default_behavior: 'no_defaults'
     networks_cli_compatible: yes
     purge_networks: yes
