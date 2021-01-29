@@ -26,3 +26,8 @@
             path: '/etc/resolv.conf'
             state: 'link'
       when: not resolvconf.stat.islnk
+    - name: 'Install dbus'
+      apt:
+        name: 'dbus'
+        state: 'present'
+        update_cache: yes
