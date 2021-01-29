@@ -13,25 +13,32 @@
   tasks:
     - name: 'Assert that HTTP/HTTPS ports are open'
       wait_for:
-        host: '{{ ansible_fqdn }}'
-        port: '{{ item }}'
+        host: "{{ hostvars[item[0]]['ansible_fqdn'] }}"
+        port: '{{ item[1] }}'
         state: 'started'
         delay: 0
         timeout: 3
-      loop:
-        - '80'
-        - '443'
+      with_nested:
+        - '{{ ansible_play_hosts }}'
+        - [ '80', '443' ]
+      loop_control:
+        label: "Host: {{ hostvars[item[0]]['ansible_fqdn'] }}, Port: {{ item[1] }}"
       delegate_to: 'localhost'
+      run_once: true
     - name: 'Assert that other ports are not open'
       wait_for:
-        host: '{{ ansible_fqdn }}'
-        port: '{{ item }}'
+        host: "{{ hostvars[item[0]]['ansible_fqdn'] }}"
+        port: '{{ item[1] }}'
         state: 'stopped'
         delay: 0
         timeout: 3
-      loop:
+      with_nested:
+        - '{{ ansible_play_hosts }}'
         - '53'
+      loop_control:
+        label: "Host: {{ hostvars[item[0]]['ansible_fqdn'] }}, Port: {{ item[1] }}"
       delegate_to: 'localhost'
+      run_once: true
     - name: 'Assert that docker is installed'
       assert:
         that: '"docker-ce" in ansible_facts.packages'
@@ -78,53 +85,105 @@
       changed_when: false
     - name: 'Assert that Traefik dashboard is not accessible without authentication'
       uri:
-        url: 'https://{{ ansible_fqdn }}/traefik'
+        url: "https://{{ hostvars[item]['ansible_fqdn'] }}/traefik"
         validate_certs: no
         status_code: 401
+      register: uri_result
+      until: uri_result.status == 401
+      retries: 5
+      delay: 10
+      loop: '{{ ansible_play_hosts }}'
+      loop_control:
+        label: "Host: {{ hostvars[item]['ansible_fqdn'] }}"
       delegate_to: 'localhost'
+      run_once: true
     - name: 'Assert that Traefik dashboard is accessible with authentication'
       uri:
-        url: 'https://{{ ansible_fqdn }}/traefik'
+        url: "https://{{ hostvars[item]['ansible_fqdn'] }}/traefik"
         url_username: '{{ traefik.api.user }}'
         url_password: '{{ traefik.api.password }}'
         validate_certs: no
         status_code: 200
+      register: uri_result
+      until: uri_result.status == 200
+      retries: 5
+      delay: 10
+      loop: '{{ ansible_play_hosts }}'
+      loop_control:
+        label: "Host: {{ hostvars[item]['ansible_fqdn'] }}"
       delegate_to: 'localhost'
+      run_once: true
     - name: 'Assert that Traefik API is not accessible without authentication'
       uri:
-        url: 'https://{{ ansible_fqdn }}/traefik/api/version'
+        url: "https://{{ hostvars[item]['ansible_fqdn'] }}/traefik/api/version"
         validate_certs: no
         status_code: 401
+      register: uri_result
+      until: uri_result.status == 401
+      retries: 5
+      delay: 10
+      loop: '{{ ansible_play_hosts }}'
+      loop_control:
+        label: "Host: {{ hostvars[item]['ansible_fqdn'] }}"
       delegate_to: 'localhost'
+      run_once: true
     - name: 'Assert that Traefik API is accessible with authentication'
       uri:
-        url: 'https://{{ ansible_fqdn }}/traefik/api/version'
+        url: "https://{{ hostvars[item]['ansible_fqdn'] }}/traefik/api/version"
         url_username: '{{ traefik.api.user }}'
         url_password: '{{ traefik.api.password }}'
         validate_certs: no
         status_code: 200
+      register: uri_result
+      until: uri_result.status == 200
+      retries: 5
+      delay: 10
+      loop: '{{ ansible_play_hosts }}'
+      loop_control:
+        label: "Host: {{ hostvars[item]['ansible_fqdn'] }}"
       delegate_to: 'localhost'
+      run_once: true
     - name: 'Assert that Nextcloud is accessible'
       uri:
         url: 'https://cloud.{{ domain_name }}'
         validate_certs: no
         status_code: 200
+      register: uri_result
+      until: uri_result.status == 200
+      retries: 5
+      delay: 10
       delegate_to: 'localhost'
-    - name: 'Assert that Rocket.Chat is accessible'
+      run_once: true
+    - name: 'Assert that Mattermost/Rocket.Chat is accessible'
       uri:
         url: 'https://chat.{{ domain_name }}'
         validate_certs: no
         status_code: 200
+      register: uri_result
+      until: uri_result.status == 200
+      retries: 5
+      delay: 10
       delegate_to: 'localhost'
+      run_once: true
     - name: 'Assert that Moodle is accessible'
       uri:
         url: 'https://learn.{{ domain_name }}'
         validate_certs: no
         status_code: 200
+      register: uri_result
+      until: uri_result.status == 200
+      retries: 5
+      delay: 10
       delegate_to: 'localhost'
+      run_once: true
     - name: 'Assert that DockuWiki is accessible'
       uri:
         url: 'https://wiki.{{ domain_name }}'
         validate_certs: no
         status_code: 200
+      register: uri_result
+      until: uri_result.status == 200
+      retries: 5
+      delay: 10
       delegate_to: 'localhost'
+      run_once: true
