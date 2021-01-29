@@ -10,19 +10,15 @@
     - '{{ containers_config_path }}/traefik/config'
     - '{{ containers_data_path }}/traefik/data'
 
-- name: 'Check if acme.json exists'
-  ansible.builtin.stat:
-    path: '{{ containers_data_path }}/traefik/data/acme.json'
-  register: traefik_acme_json_file
-
 - name: 'Create acme.json file'
   ansible.builtin.file:
     path: '{{ containers_data_path }}/traefik/data/acme.json'
     state: 'touch'
+    access_time: 'preserve'
+    modification_time: 'preserve'
     owner: 'root'
     group: 'root'
     mode: '0600'
-  when: not traefik_acme_json_file.stat.exists
 
 - name: 'Create trafik config files from template'
   ansible.builtin.template:
